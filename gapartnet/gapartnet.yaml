@@ -60,20 +60,7 @@ trainer:
   strategy: auto
   devices: auto
   num_nodes: 1
-  # resume_from_checkpoint: /data2/haoran/PLAffordance/wandb/perception/1osg9z17/checkpoints/epoch_118_miou_0.00.ckpt
 
-  # logger:
-  #   class_path: WandbLogger
-  #   init_args:
-  #     save_dir: wandb
-  #     project: perception
-  #     entity: haoran-geng
-  #     group: 1024_new
-  #     name: test
-  #     notes: "GAPartNet"
-  #     tags: ["GAPartNet", "score", "npcs"]
-  #     save_code: True
-  #     mode: dryrun
   callbacks:
     - class_path: RichProgressBar
       init_args:
