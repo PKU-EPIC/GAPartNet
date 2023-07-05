@@ -67,7 +67,11 @@ and estimate the pose of it. We also provide visualization code. This is an visu
   --model.init_args.ckpt ckpt/release.ckpt
   ```
 Notice:
-- We provide visualization code here, you can change cfg in `model.init_args.visualize_cfg` and can control what to visualize (save_option includes ["raw", "pc", "sem_pred", "sem_gt", "ins_pred", "ins_gt", "npcs_pred", "npcs_gt", "bbox_gt", "bbox_gt_pure", "bbox_pred", "bbox_pred_pure"]) and the number of visualization samples.
+- We provide visualization code here, you can change cfg in `model.init_args.visualize_cfg` and control
+  - whether to visualize (visualize)
+  - where to save results (SAVE_ROOT)
+  - what to visualize: save_option includes `["raw", "pc", "sem_pred", "sem_gt", "ins_pred", "ins_gt", "npcs_pred", "npcs_gt", "bbox_gt", "bbox_gt_pure", "bbox_pred", "bbox_pred_pure"]` (save_option)
+  - the number of visualization samples (sample_num)
 - We fix some bugs for mAP computation, check the code for more details.
 
 ### 5. Training
