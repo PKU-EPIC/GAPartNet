@@ -2,7 +2,7 @@ import copy
 import json
 from functools import partial
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 
 import numpy as np
 from lightning.pytorch import LightningDataModule
@@ -22,7 +22,7 @@ from misc.info import OBJECT_NAME2ID
 class GAPartNetDataset(Dataset):
     def __init__(
         self,
-        root_dir: Union[str, Path] = "",
+        root_dir: Union[str, Path, List] = "",
         shuffle: bool = False,
         max_points: int = 20000,
         augmentation: bool = False,
@@ -36,7 +36,12 @@ class GAPartNetDataset(Dataset):
         nopart_path: str = "data/nopart.txt",
         no_label = False,
     ):
-        file_paths=glob(str(root_dir) + "/*.pth")
+        if type(root_dir) == list:
+            file_paths = []
+            for rt in root_dir:
+                file_paths += glob(str(rt) + "/*.pth")
+        else:
+            file_paths=glob(str(root_dir) + "/*.pth")
         self.nopart_files = open(nopart_path, "r").readlines()[0].split(" ")
         self.nopart_names = [p.split("/")[-1].split(".")[0] for p in self.nopart_files]
         file_paths = [path for path in file_paths 
@@ -299,6 +304,7 @@ class GAPartNetInst(LightningDataModule):
         intra_few_shot: bool = False,
         inter_few_shot: bool = False,
         few_shot_num: int = 256,
+        train_with_all: bool = False,
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -317,6 +323,8 @@ class GAPartNetInst(LightningDataModule):
         self.flip_prob = flip_prob
         self.rotate_prob = rotate_prob
         
+        self.train_with_all = train_with_all
+        
         # debug
         self.train_few_shot = train_few_shot
         self.val_few_shot = val_few_shot
@@ -326,19 +334,40 @@ class GAPartNetInst(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         if stage in (None, "fit", "validate"):
-            self.train_data_files = GAPartNetDataset(
-                Path(self.root_dir) / "train" / "pth",
-                shuffle=True,
-                max_points=self.max_points,
-                augmentation=True,
-                voxel_size=self.voxel_size,
-                few_shot = self.train_few_shot,
-                few_shot_num=self.few_shot_num,
-                pos_jitter = self.pos_jitter,
-                color_jitter = self.color_jitter,
-                flip_prob = self.flip_prob,
-                rotate_prob = self.rotate_prob,
-            )
+            if not self.train_with_all:
+                self.train_data_files = GAPartNetDataset(
+                    Path(self.root_dir) / "train" / "pth",
+                    shuffle=True,
+                    max_points=self.max_points,
+                    augmentation=True,
+                    voxel_size=self.voxel_size,
+                    few_shot = self.train_few_shot,
+                    few_shot_num=self.few_shot_num,
+                    pos_jitter = self.pos_jitter,
+                    color_jitter = self.color_jitter,
+                    flip_prob = self.flip_prob,
+                    rotate_prob = self.rotate_prob,
+                )
+            else:
+                self.train_data_files = GAPartNetDataset(
+                    root_dir = [
+                        Path(self.root_dir) / "train" / "pth",
+                        Path(self.root_dir) / "val" / "pth",
+                        Path(self.root_dir) / "test_intra" / "pth",
+                        Path(self.root_dir) / "test_inter" / "pth",
+                    ],
+                    shuffle=True,
+                    max_points=self.max_points,
+                    augmentation=True,
+                    voxel_size=self.voxel_size,
+                    few_shot = self.train_few_shot,
+                    few_shot_num=self.few_shot_num,
+                    pos_jitter = self.pos_jitter,
+                    color_jitter = self.color_jitter,
+                    flip_prob = self.flip_prob,
+                    rotate_prob = self.rotate_prob,
+                )
+                
 
             self.val_data_files = GAPartNetDataset(
                 Path(self.root_dir) / "val" / "pth",

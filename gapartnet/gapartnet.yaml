@@ -47,11 +47,12 @@ data:
     color_jitter: 0.3
     flip_prob: 0.3
     rotate_prob: 0.3
-    train_few_shot: true
-    val_few_shot: true
-    intra_few_shot: true
-    inter_few_shot: true
+    train_few_shot: false
+    val_few_shot: false
+    intra_few_shot: false
+    inter_few_shot: false
     few_shot_num: 640
+    train_with_all: False
 
 trainer:
   max_epochs: 700
