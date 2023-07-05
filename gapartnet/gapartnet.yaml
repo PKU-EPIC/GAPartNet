@@ -19,7 +19,7 @@ model:
     ignore_sem_label: -100
     use_sem_focal_loss: true
     use_sem_dice_loss: true
-    training_schedule: [0,0]
+    training_schedule: [5,10]
     val_nms_iou_threshold: 0.3
     val_ap_iou_threshold: 0.5
     symmetry_indices: [0, 1, 3, 3, 2, 0, 3, 2, 4, 1]

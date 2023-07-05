@@ -112,12 +112,6 @@ class GAPartNet(lp.LightningModule):
         )
         self.npcs_head = nn.Linear(channels[0], 3 * (self.num_part_classes - 1))
         
-        # symmetry
-        # self.register_buffer(
-        #     "symmetry_indices", torch.as_tensor(symmetry_indices, dtype=torch.int64)
-        # )
-        # if symmetry_indices is not None:
-        #     assert len(symmetry_indices) == self.num_part_classes, (symmetry_indices, self.num_part_classes)
         (
             symmetry_matrix_1, symmetry_matrix_2, symmetry_matrix_3
         ) = get_symmetry_matrix()
@@ -665,29 +659,23 @@ class GAPartNet(lp.LightningModule):
             point_clouds, batch_idx, split[dataloader_idx]
         )
         
-        if proposals is not None:
+        if dataloader_idx > len(self.validation_step_outputs) - 1:
+            self.validation_step_outputs.append([])
+            
+        if self.current_epoch >= self.start_scorenet and proposals is not None:
             proposals = filter_invalid_proposals(
                 proposals,
                 score_threshold=self.val_score_threshold,
                 min_num_points_per_proposal=self.val_min_num_points_per_proposal
             )
             proposals = apply_nms(proposals, self.val_nms_iou_threshold)
-        
-        
-        if dataloader_idx > len(self.validation_step_outputs) - 1:
-            self.validation_step_outputs.append([])
-        
-        proposals.pt_sem_classes = proposals.sem_preds[proposals.proposal_offsets[:-1].long()]
-        
-
-        
-        
-        proposals_ = Instances(
-            score_preds=proposals.score_preds, pt_sem_classes=proposals.pt_sem_classes, \
-            batch_indices=proposals.batch_indices, instance_sem_labels=proposals.instance_sem_labels, \
-            ious=proposals.ious, proposal_offsets=proposals.proposal_offsets, valid_mask= proposals.valid_mask)
-        
-        
+            proposals.pt_sem_classes = proposals.sem_preds[proposals.proposal_offsets[:-1].long()]
+            proposals_ = Instances(
+                score_preds=proposals.score_preds, pt_sem_classes=proposals.pt_sem_classes, \
+                batch_indices=proposals.batch_indices, instance_sem_labels=proposals.instance_sem_labels, \
+                ious=proposals.ious, proposal_offsets=proposals.proposal_offsets, valid_mask= proposals.valid_mask)
+        else:
+            proposals_ = None
         
         self.validation_step_outputs[dataloader_idx].append((pc_ids, sem_seg, proposals_))
         return pc_ids, sem_seg, proposals_
@@ -720,7 +708,8 @@ class GAPartNet(lp.LightningModule):
             miou = mean_iou(sem_preds, sem_labels, num_classes=self.num_part_classes)
             
             # instance segmentation
-            proposals = [x[2] for x in validation_step_outputs if x[2]!= None]
+            if self.current_epoch >= self.start_scorenet:
+                proposals = [x[2] for x in validation_step_outputs if x[2]!= None]
             
             del validation_step_outputs
             
@@ -730,29 +719,33 @@ class GAPartNet(lp.LightningModule):
             pixel_accus.append(pixel_accu)
             
             # instance segmentation
+            
             thes = [0.5 + 0.05 * i for i in range(10)]
             aps = []
             for the in thes:
-                ap = compute_ap(proposals, self.num_part_classes, the)
+                if self.current_epoch >= self.start_scorenet:
+                    ap = compute_ap(proposals, self.num_part_classes, the)
+                else:
+                    ap = 0
                 aps.append(ap)
                 if the == 0.5:
                     ap50 = ap
             mAP = np.array(aps).mean()
             mAPs.append(mAP)
 
-            for class_idx in range(1, self.num_part_classes):
-                partname = PART_ID2NAME[class_idx]
-                self.log(
-                    f"{split}/AP@50_{partname}",
-                    np.mean(ap50[class_idx - 1]) * 100,
-                    batch_size=data_size,
-                    on_epoch=True, prog_bar=False, logger=True, sync_dist=True,
-                )
+            if self.current_epoch >= self.start_scorenet:
+                for class_idx in range(1, self.num_part_classes):
+                    partname = PART_ID2NAME[class_idx]
+                    self.log(
+                        f"{split}/AP@50_{partname}",
+                        np.mean(ap50[class_idx - 1]) * 100,
+                        batch_size=data_size,
+                        on_epoch=True, prog_bar=False, logger=True, sync_dist=True,
+                    )
                 
-            
             mean_ap50.append(np.mean(ap50))
-            
-            
+
+
             self.log(f"{split}/AP@50", 
                     np.mean(ap50) * 100, 
                     batch_size=data_size,

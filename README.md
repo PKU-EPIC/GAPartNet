@@ -66,6 +66,9 @@ and estimate the pose of it. We also provide visualization code. This is an visu
   python train.py test -c gapartnet.yaml \
   --model.init_args.ckpt ckpt/release.ckpt
   ```
+Notice:
+- We provide visualization code here, you can change cfg in `model.init_args.visualize_cfg` and can control what to visualize (save_option includes ["raw", "pc", "sem_pred", "sem_gt", "ins_pred", "ins_gt", "npcs_pred", "npcs_gt", "bbox_gt", "bbox_gt_pure", "bbox_pred", "bbox_pred_pure"]) and the number of visualization samples.
+- We fix some bugs for mAP computation, check the code for more details.
 
 ### 5. Training
   You can run the following code to train the policy:
@@ -75,6 +78,10 @@ and estimate the pose of it. We also provide visualization code. This is an visu
   CUDA_VISIBLE_DEVICES=0 \
   python train.py fit -c gapartnet.yaml
   ```
+Notice:
+- For training, please use a good schedule, first train the semantic segmentation backbone and head, then, add the clustering and scorenet supervision for instance segmentation. You can change the schedule in cfg(`model.init_args.training_schedule`). The schedule is a list, the first number indicate the epoch to start the clustering and scorenet training, the second number indicate the epoch to start the npcsnet training. For example, [5,10] means that the clustering and scorenet training will start at epoch 5, and the npcsnet training will start at epoch 10.
+- If you want to debug, add `--model.init_args.debug True` to the command and also change `data.init_args.xxx_few_shot` in the cfg to be `True`, here `xxx` is the name of training and validation sets.
+- We also provide multi-GPU parallel training, please set `CUDA_VISIBLE_DEVICES` to be the GPUs you want to use, e.g. `CUDA_VISIBLE_DEVICES=3,6` means you want to use 2 GPU #3 and #6 for training.
 
 ## Citation
 If you find our work useful in your research, please consider citing:
