@@ -30,7 +30,7 @@ For more information, please visit our [**project page**](https://pku-epic.githu
 
 To obtain our dataset, please fill out [**this form**](https://forms.gle/3qzv8z5vP2BT5ARN7) and check the [**Terms&Conditions**](https://docs.google.com/document/d/1kjFCTcDLtaycZiJVmSVhT9Yw8oCAHl-3XKdJapvRdW0/edit?usp=sharing). Please cite our paper if you use our dataset.
 
-Download our pretrained checkpoint [**here**](https://drive.google.com/file/d/1D1PwfXPYPtxadthKAJdehhIBbPEyBB6X/view?usp=sharing)! (Notive that the checkpoint in the dataset is expired, please use the this one.)
+Download our pretrained checkpoint [**here**](https://drive.google.com/file/d/1D1PwfXPYPtxadthKAJdehhIBbPEyBB6X/view?usp=sharing)! (Notice that the checkpoint in the dataset is expired, please use the this one.)
 
 ## GAPartNet Network and Inference
 
