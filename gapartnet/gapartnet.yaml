@@ -1,0 +1,91 @@
+model:
+  class_path: network.model.GAPartNet
+  init_args:
+    debug: False
+    in_channels: 6
+    num_part_classes: 10
+    backbone_type: SparseUNet
+    backbone_cfg:
+      channels: [16,32,48,64,80,96,112]
+      block_repeat: 2
+    instance_seg_cfg:
+      ball_query_radius: 0.04
+      max_num_points_per_query: 50
+      min_num_points_per_proposal: 5 # 50 for scannet?
+      max_num_points_per_query_shift: 300
+      score_fullscale: 28
+      score_scale: 50
+    learning_rate: 0.001
+    ignore_sem_label: -100
+    use_sem_focal_loss: true
+    use_sem_dice_loss: true
+    training_schedule: [0,0]
+    val_nms_iou_threshold: 0.3
+    val_ap_iou_threshold: 0.5
+    symmetry_indices: [0, 1, 3, 3, 2, 0, 3, 2, 4, 1]
+    visualize_cfg:
+      visualize: True
+      visualize_dir: visu
+      sample_num: 10
+      RAW_IMG_ROOT: "data/image_kuafu"
+      GAPARTNET_DATA_ROOT: "data/GAPartNet_All"
+      SAVE_ROOT: "output/GAPartNet_result"
+      save_option: ["raw", "pc", "sem_pred", "sem_gt", "ins_pred", "ins_gt", "npcs_pred", "npcs_gt", "bbox_gt", "bbox_gt_pure", "bbox_pred", "bbox_pred_pure"]
+
+
+data:
+  class_path: dataset.gapartnet.GAPartNetInst
+  init_args:
+    root_dir: data/GAPartNet_All
+    max_points: 20000
+    voxel_size: [0.01,0.01,0.01]
+    train_batch_size: 64
+    val_batch_size: 32
+    test_batch_size: 32
+    num_workers: 16
+    pos_jitter: 0.1
+    color_jitter: 0.3
+    flip_prob: 0.3
+    rotate_prob: 0.3
+    train_few_shot: true
+    val_few_shot: true
+    intra_few_shot: true
+    inter_few_shot: true
+    few_shot_num: 640
+
+trainer:
+  max_epochs: 700
+  accelerator: gpu
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  # resume_from_checkpoint: /data2/haoran/PLAffordance/wandb/perception/1osg9z17/checkpoints/epoch_118_miou_0.00.ckpt
+
+  # logger:
+  #   class_path: WandbLogger
+  #   init_args:
+  #     save_dir: wandb
+  #     project: perception
+  #     entity: haoran-geng
+  #     group: 1024_new
+  #     name: test
+  #     notes: "GAPartNet"
+  #     tags: ["GAPartNet", "score", "npcs"]
+  #     save_code: True
+  #     mode: dryrun
+  callbacks:
+    - class_path: RichProgressBar
+      init_args:
+        leave: True
+    - class_path: ModelCheckpoint
+      init_args:
+        filename: "epoch_{epoch:03d}_mAP_{monitor_metrics/mean_mAP:.2f}"
+        auto_insert_metric_name: False
+        save_top_k: 5
+        mode: max
+        monitor: "monitor_metrics/mean_mAP"
+        every_n_epochs: 1
+
+  default_root_dir: wandb
+
+seed_everything: 23333

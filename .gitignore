@@ -1,0 +1,7 @@
+__pycache__/
+GAPartNet_All
+perception/
+wandb/
+ckpt/
+image_kuafu
+output/GAPartNet_result/

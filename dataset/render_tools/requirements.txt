@@ -1,0 +1,5 @@
+sapien == 2.1.0 # for Linux
+# sapien == 1.0.0rc2 # for macOS
+opencv-contrib-python
+open3d
+transforms3d

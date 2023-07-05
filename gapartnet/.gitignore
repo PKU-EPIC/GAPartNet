@@ -1,0 +1,12 @@
+wandb/
+raw*
+_raw*
+__pycache__*
+*__pycache__/
+__pycache__/
+*/__pycache__* 
+GAPartNet_data/
+gallery/
+GAPartNet_result/
+.ipynb_checkpoints/
+GAPartNet_data
