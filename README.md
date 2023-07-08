@@ -66,6 +66,7 @@ and estimate the pose of it. We also provide visualization code. This is a visua
 
   CUDA_VISIBLE_DEVICES=0 \
   python train.py test -c gapartnet.yaml \
+  --model.init_args.training_schedule "[0,0]" \
   --model.init_args.ckpt ckpt/release.ckpt
   ```
 Notice:
