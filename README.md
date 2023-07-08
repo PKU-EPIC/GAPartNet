@@ -20,22 +20,24 @@ For more information, please visit our [**project page**](https://pku-epic.githu
 
 
 ## 💡 News
-- `2023/6/28` We polish our model with user-friendly Lightning framework and release detailed training code! Check gapartnet folder for more details!
+- `2023/6/28` We polish our model with the user-friendly Lightning framework and release detailed training code! Check the gapartnet folder for more details!
 
 - `2023/5/21` GAPartNet Dataset has been released, including Object & Part Assets and Annotations, Rendered PointCloud Data and our Pre-trained Checkpoint.
 
 ## GAPartNet Dataset
 
-(New!) GAPartNet Dataset has been released, including Object & Part Assets and Annotations, Rendered PointCloud Data and our Pre-trained Checkpoint.
+(New!) GAPartNet Dataset has been released, including Object & Part Assets and Annotations, Rendered PointCloud Data, and our Pre-trained Checkpoint.
 
 To obtain our dataset, please fill out [**this form**](https://forms.gle/3qzv8z5vP2BT5ARN7) and check the [**Terms&Conditions**](https://docs.google.com/document/d/1kjFCTcDLtaycZiJVmSVhT9Yw8oCAHl-3XKdJapvRdW0/edit?usp=sharing). Please cite our paper if you use our dataset.
 
-Download our pretrained checkpoint [**here**](https://drive.google.com/file/d/1D1PwfXPYPtxadthKAJdehhIBbPEyBB6X/view?usp=sharing)! (Notice that the checkpoint in the dataset is expired, please use the this one.)
+Download our pretrained checkpoint [**here**](https://drive.google.com/file/d/1D1PwfXPYPtxadthKAJdehhIBbPEyBB6X/view?usp=sharing)! 
+We also release the checkpoint trained on all the GAPartNet dataset with the best performance [**here**](https://drive.google.com/file/d/1TzsVKVlbqRg3fd3XEutQ2jgTH07Q8Lad/view?usp=sharing)
+(Notice that the checkpoint in the dataset is expired, please use this one.)
 
 ## GAPartNet Network and Inference
 
-We release our network and checkpoint, check gapartnet folder for more details. You can segment part 
-and estimate the pose of it. We also provide visualization code. This is an visualization example:
+We release our network and checkpoints; check the gapartnet folder for more details. You can segment parts 
+and estimate the pose of it. We also provide visualization code. This is a visualization example:
 ![example](gapartnet/output/example.png)
 ![example2](gapartnet/output/example2.png)
 
