@@ -12,3 +12,4 @@ python train.py test -c gapartnet.yaml \
 CUDA_VISIBLE_DEVICES=0 \
 python train.py fit -c gapartnet.yaml \
 --model.init_args.ckpt ckpt/release.ckpt
+
