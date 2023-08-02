@@ -74,6 +74,6 @@ trainer:
         monitor: "monitor_metrics/mean_mAP"
         every_n_epochs: 1
 
-  default_root_dir: wandb
+  default_root_dir: ./wandb
 
 seed_everything: 23333

@@ -10,7 +10,7 @@ from epic_ops.voxelize import voxelize
 from structure.instances import Instances
 
 
-@torch.jit.script
+# @torch.jit.script
 def compute_npcs_loss(
     npcs_preds: torch.Tensor,
     gt_npcs: torch.Tensor,
@@ -43,7 +43,7 @@ def compute_npcs_loss(
     return loss.mean()
 
 
-@torch.jit.script
+# @torch.jit.script
 def segmented_voxelize(
     pt_xyz: torch.Tensor,
     pt_features: torch.Tensor,
@@ -104,7 +104,7 @@ def segmented_voxelize(
     return voxel_features, voxel_coords, pc_voxel_id
 
 
-@torch.jit.script
+# @torch.jit.script
 def cluster_proposals(
     pt_xyz: torch.Tensor,
     batch_indices: torch.Tensor,
@@ -140,7 +140,7 @@ def cluster_proposals(
     return sorted_cc_labels, sorted_indices
 
 
-@torch.jit.script
+# @torch.jit.script
 def get_gt_scores(
     ious: torch.Tensor, fg_thresh: float = 0.75, bg_thresh: float = 0.25
 ) -> torch.Tensor:
@@ -298,7 +298,7 @@ def apply_nms(
     )
 
 
-@torch.jit.script
+# @torch.jit.script
 def voc_ap(
     rec: torch.Tensor,
     prec: torch.Tensor,
@@ -341,7 +341,7 @@ def voc_ap(
     return float(ap.item())
 
 
-@torch.jit.script
+# @torch.jit.script
 def _compute_ap_per_class(
     tp: torch.Tensor, fp: torch.Tensor, num_gt_instances: int
 ) -> float:
@@ -356,7 +356,7 @@ def _compute_ap_per_class(
     return voc_ap(rec, prec)
 
 
-@torch.jit.script
+# @torch.jit.script
 def _compute_ap(
     confidence: torch.Tensor,
     classes: torch.Tensor,
