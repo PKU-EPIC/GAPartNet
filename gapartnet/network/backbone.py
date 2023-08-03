@@ -1,10 +1,10 @@
 from typing import List
-
 import spconv.pytorch as spconv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from network.networks.backbones.pointnet import getPointNet
+from network.pointnet.pointnet_sem_seg import PointNetSegBackbone
 
 class ResBlock(spconv.SparseModule):
     def __init__(
@@ -48,7 +48,6 @@ class ResBlock(spconv.SparseModule):
         x = x.replace_feature(F.relu(x.features + shortcut.features))
 
         return x
-
 
 class UBlock(nn.Module):
     def __init__(
@@ -124,7 +123,6 @@ class UBlock(nn.Module):
 
         return x
 
-
 class SparseUNet(nn.Module):
     def __init__(self, stem: nn.Module, ublock: UBlock):
         super().__init__()
@@ -166,8 +164,6 @@ class SparseUNet(nn.Module):
             indice_key_id=1)
 
         return SparseUNet(stem, block)
-
-
 
 class UBlock_NoSkip(nn.Module):
     def __init__(
@@ -243,7 +239,6 @@ class UBlock_NoSkip(nn.Module):
 
         return x
 
-
 class SparseUNet_NoSkip(nn.Module):
     def __init__(self, stem: nn.Module, ublock: UBlock_NoSkip):
         super().__init__()
@@ -285,3 +280,20 @@ class SparseUNet_NoSkip(nn.Module):
             indice_key_id=1)
 
         return SparseUNet(stem, block)
+
+
+class PointNetBackbone(nn.Module):
+    def __init__(
+        self,
+        pc_dim: int,
+        feature_dim: int,
+    ):
+        super().__init__()
+        self.pc_dim = pc_dim
+        self.feature_dim = feature_dim
+        self.backbone = PointNetSegBackbone(self.pc_dim,self.feature_dim)
+    
+    def forward(self, input_pc):
+        others = {}
+        return self.backbone(input_pc), others
+

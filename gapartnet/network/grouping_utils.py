@@ -89,14 +89,14 @@ def segmented_voxelize(
         score_fullscale - range_xyz + 0.001, max=0
     ) * torch.rand(3, dtype=min_xyz.dtype, device=min_xyz.device)
     scaled_points += offsets[segment_indices]
-
+    score_fullscale = float(score_fullscale)
     voxel_features, voxel_coords, voxel_batch_indices, pc_voxel_id = voxelize(
         scaled_points,
         pt_features,
         batch_offsets=segment_offsets.long(),
-        voxel_size=torch.as_tensor([1., 1., 1.]),
-        points_range_min=torch.as_tensor([0., 0., 0.]),
-        points_range_max=torch.as_tensor([score_fullscale, score_fullscale, score_fullscale]),
+        voxel_size=torch.as_tensor([1., 1., 1.], device=scaled_points.device),
+        points_range_min=torch.as_tensor([0., 0., 0.], device=scaled_points.device),
+        points_range_max=torch.as_tensor([score_fullscale, score_fullscale, score_fullscale], device=scaled_points.device),
         reduction="mean",
     )
     voxel_coords = torch.cat([voxel_batch_indices[:, None], voxel_coords], dim=1)

@@ -1,13 +1,22 @@
 model:
   class_path: network.model.GAPartNet
   init_args:
-    debug: False
+    debug: True
     in_channels: 6
     num_part_classes: 10
+
     backbone_type: SparseUNet
     backbone_cfg:
       channels: [16,32,48,64,80,96,112]
       block_repeat: 2
+
+    # backbone_type: PointNet
+    # backbone_cfg:
+    #   pc_dim: 3 # rgb
+    #   feature_dim: 16 # same as sparse unet
+    #   channels: [16,32,48,64,80,96,112] # just used for scorenet
+    #   block_repeat: 2 # just used for scorenet
+    
     instance_seg_cfg:
       ball_query_radius: 0.04
       max_num_points_per_query: 50

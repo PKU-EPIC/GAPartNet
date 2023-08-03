@@ -22,6 +22,7 @@ from structure.instances import Instances
 from misc.info import OBJECT_NAME2ID, PART_ID2NAME, PART_NAME2ID, get_symmetry_matrix
 from misc.visu import visualize_gapartnet
 from misc.pose_fitting import estimate_pose_from_npcs
+from .backbone import SparseUNet
 
 class GAPartNet(lp.LightningModule):
     def __init__(
@@ -85,32 +86,40 @@ class GAPartNet(lp.LightningModule):
         norm_fn = functools.partial(nn.BatchNorm1d, eps=1e-4, momentum=0.1)
         # backbone
         if self.backbone_type == "SparseUNet":
-            from .backbone import SparseUNet
             channels = self.backbone_cfg["channels"]
             block_repeat = self.backbone_cfg["block_repeat"]
+            fea_dim = channels[0]
             self.backbone = SparseUNet.build(in_channels, channels, block_repeat, norm_fn)
+        elif self.backbone_type == "PointNet":
+            from .backbone import PointNetBackbone
+            pc_fea_dim = self.backbone_cfg["pc_dim"]
+            fea_dim = self.backbone_cfg["feature_dim"]
+            channels = self.backbone_cfg["channels"]
+            block_repeat = self.backbone_cfg["block_repeat"]
+            self.backbone = PointNetBackbone(pc_fea_dim, fea_dim)
+            
         else:
             raise NotImplementedError(f"backbone type {self.backbone_type} not implemented")
         # semantic segmentation head
-        self.sem_seg_head = nn.Linear(channels[0], self.num_part_classes)
+        self.sem_seg_head = nn.Linear(fea_dim, self.num_part_classes)
         # offset prediction
         self.offset_head = nn.Sequential(
-            nn.Linear(channels[0], channels[0]),
-            norm_fn(channels[0]),
+            nn.Linear(fea_dim, fea_dim),
+            norm_fn(fea_dim),
             nn.ReLU(inplace=True),
-            nn.Linear(channels[0], 3),
+            nn.Linear(fea_dim, 3),
         )
         
         self.score_unet = SparseUNet.build(
-            channels[0], channels[:2], block_repeat, norm_fn, without_stem=True
+            fea_dim, channels[:2], block_repeat, norm_fn, without_stem=True
         )
-        self.score_head = nn.Linear(channels[0], self.num_part_classes - 1)
+        self.score_head = nn.Linear(fea_dim, self.num_part_classes - 1)
         
         
         self.npcs_unet = SparseUNet.build(
-            channels[0], channels[:2], block_repeat, norm_fn, without_stem=True
+            fea_dim, channels[:2], block_repeat, norm_fn, without_stem=True
         )
-        self.npcs_head = nn.Linear(channels[0], 3 * (self.num_part_classes - 1))
+        self.npcs_head = nn.Linear(fea_dim, 3 * (self.num_part_classes - 1))
         
         (
             symmetry_matrix_1, symmetry_matrix_2, symmetry_matrix_3
@@ -142,7 +151,10 @@ class GAPartNet(lp.LightningModule):
             pc_voxel_id = pc_batch.pc_voxel_id
             voxel_features = self.backbone(voxel_tensor)
             pc_feature = voxel_features.features[pc_voxel_id]
-
+        elif self.backbone_type == "PointNet":
+            pc_feature = self.backbone(pc_batch.points.reshape(-1, 6, 20000))[0]
+            pc_feature = pc_feature.reshape(-1, pc_feature.shape[-1])
+            
         return pc_feature
     
     def forward_sem_seg(

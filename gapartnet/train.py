@@ -9,6 +9,8 @@ def log_name(config):
     model_str = ""
     if config["model"]["init_args"]["backbone_type"] == "SparseUNet":
         model_str += "SU"
+    elif config["model"]["init_args"]["backbone_type"] == "PointNet":
+        model_str += "PN"
     else:
         raise NotImplementedError(f"backbone type {config['model']['init_args']['backbone_type']} not implemented")
     
