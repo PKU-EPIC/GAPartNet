@@ -291,7 +291,6 @@ class GAPartNet(lp.LightningModule):
 
         sorted_indices = sorted_indices[valid_point_mask]
         if sorted_indices.shape[0] == 0:
-            import pdb; pdb.set_trace()
             return None, None, None
 
         batch_indices = batch_indices[sorted_indices]
