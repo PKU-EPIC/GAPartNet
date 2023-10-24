@@ -4,21 +4,37 @@ from os.path import join as pjoin
 import numpy as np
 from argparse import ArgumentParser
 
-from utils.config_utils import ID_PATH, DATASET_PATH, CAMERA_POSITION_RANGE, TARGET_GAPARTS, BACKGROUND_RGB, SAVE_PATH
+from utils.config_utils import PARTNET_DATASET_PATH, AKB48_DATASET_PATH, PARTNET_ID_PATH, AKB48_ID_PATH, PARTNET_CAMERA_POSITION_RANGE, \
+    AKB48_CAMERA_POSITION_RANGE, TARGET_GAPARTS, BACKGROUND_RGB, SAVE_PATH
 from utils.read_utils import get_id_category, read_joints_from_urdf_file, save_rgb_image, save_depth_map, save_anno_dict, save_meta
 from utils.render_utils import get_cam_pos, set_all_scene, render_rgb_image, render_depth_map, \
     render_sem_ins_seg_map, add_background_color_for_image, get_camera_pos_mat, merge_joint_qpos
 from utils.pose_utils import query_part_pose_from_joint_qpos, get_NPCS_map_from_oriented_bbox
 
 
-def render_one_image(model_id, camera_idx, render_idx, height, width, use_raytracing=False, replace_texture=False):
-    # 1. read the id list to get the category
-    category = get_id_category(model_id, ID_PATH)
-    if category is None:
-        raise ValueError(f'Cannot find the category of model {model_id}')
+def render_one_image(dataset_name, model_id, camera_idx, render_idx, height, width, use_raytracing=False, replace_texture=False):
+    
+    # 1. read the id list to get the category; set path, camera range, and base link name
+    if dataset_name == 'partnet':
+        category = get_id_category(model_id, PARTNET_ID_PATH)
+        if category is None:
+            raise ValueError(f'Cannot find the category of model {model_id}')
+        data_path = pjoin(PARTNET_DATASET_PATH, str(model_id))
+        camera_position_range = PARTNET_CAMERA_POSITION_RANGE
+        base_link_name = 'base'
+        
+    elif dataset_name == 'akb48':
+        category = get_id_category(model_id, AKB48_ID_PATH)
+        if category is None:
+            raise ValueError(f'Cannot find the category of model {model_id}')
+        data_path = pjoin(AKB48_DATASET_PATH, category, str(model_id))
+        camera_position_range = AKB48_CAMERA_POSITION_RANGE
+        base_link_name = 'root'
+    
+    else:
+        raise ValueError(f'Unknown dataset {dataset_name}')
     
     # 2. read the urdf file,  get the kinematic chain, and collect all the joints information
-    data_path = pjoin(DATASET_PATH, str(model_id))
     joints_dict = read_joints_from_urdf_file(data_path, 'mobility_annotation_gapartnet.urdf')
     
     # 3. generate the joint qpos randomly in the limit range
@@ -36,7 +52,7 @@ def render_one_image(model_id, camera_idx, render_idx, height, width, use_raytra
             raise ValueError(f'Unknown joint type {joint_type}')
     
     # 4. generate the camera pose randomly in the specified range
-    camera_range = CAMERA_POSITION_RANGE[category][camera_idx]
+    camera_range = camera_position_range[category][camera_idx]
     camera_pos = get_cam_pos(
         theta_min=camera_range['theta_min'], theta_max=camera_range['theta_max'],
         phi_min=camera_range['phi_min'], phi_max=camera_range['phi_max'],
@@ -53,7 +69,7 @@ def render_one_image(model_id, camera_idx, render_idx, height, width, use_raytra
                                         joint_qpos_dict=joint_qpos)
     
     # 6. use qpos to calculate the gapart poses
-    link_pose_dict = query_part_pose_from_joint_qpos(data_path=data_path, anno_file='link_annotation_gapartnet.json', joint_qpos=joint_qpos, joints_dict=joints_dict, target_parts=TARGET_GAPARTS, robot=robot)
+    link_pose_dict = query_part_pose_from_joint_qpos(data_path=data_path, anno_file='link_annotation_gapartnet.json', joint_qpos=joint_qpos, joints_dict=joints_dict, target_parts=TARGET_GAPARTS, base_link_name=base_link_name, robot=robot)
     
     # 7. render the rgb, depth, mask, valid(visible) gapart
     rgb_image = render_rgb_image(camera=camera)
@@ -67,8 +83,9 @@ def render_one_image(model_id, camera_idx, render_idx, height, width, use_raytra
     # 9. calculate NPCS map
     valid_linkPose_RTS_dict, valid_NPCS_map = get_NPCS_map_from_oriented_bbox(depth_map, ins_seg_map, valid_linkName_to_instId, valid_link_pose_dict, camera_intrinsic, world2camera_rotation, camera2world_translation)
     
-    # 10. (optional) use texture to render rgb to replace the previous rgb (texture issue during cutting the mesh)
+    # 10. (optional, only for [partnet] dataset) use texture to render rgb to replace the previous rgb (texture issue during cutting the mesh)
     if replace_texture:
+        assert dataset_name == 'partnet', 'Texture replacement is only needed for PartNet dataset'
         texture_joints_dict = read_joints_from_urdf_file(data_path, 'mobility_texture_gapartnet.urdf')
         texture_joint_qpos = merge_joint_qpos(joint_qpos, joints_dict, texture_joints_dict)
         scene, camera, engine, robot = set_all_scene(data_path=data_path, 
@@ -132,6 +149,7 @@ def render_one_image(model_id, camera_idx, render_idx, height, width, use_raytra
 
 if __name__ == "__main__":
     parser = ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='partnet', help='Specify the dataset to render')
     parser.add_argument('--model_id', type=int, default=41083, help='Specify the model id to render')
     parser.add_argument('--camera_idx', type=int, default=0, help='Specify the camera range index to render')
     parser.add_argument('--render_idx', type=int, default=0, help='Specify the render index to render')
@@ -142,7 +160,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    render_one_image(args.model_id, args.camera_idx, args.render_idx, args.height, args.width, args.ray_tracing, args.replace_texture)
+    assert args.dataset in ['partnet', 'akb48'], f'Unknown dataset {args.dataset}'
+    if args.dataset == 'akb48':
+        assert not args.replace_texture, 'Texture replacement is not needed for AKB48 dataset'
+    
+    render_one_image(args.dataset, args.model_id, args.camera_idx, args.render_idx, args.height, args.width, args.ray_tracing, args.replace_texture)
     
     print("Done!")
 

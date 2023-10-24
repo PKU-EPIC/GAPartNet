@@ -6,26 +6,31 @@ import numpy as np
 
 
 # TODO: Set the path to the dataset
-DATASET_PATH = './dataset/partnet_all_annotated_new'
+PARTNET_DATASET_PATH = './dataset/partnet_all_annotated_new'
+AKB48_DATASET_PATH = './dataset/akb48_all_annotated_new'
 
 SAVE_PATH = './example_rendered'
 
 VISU_SAVE_PATH = './visu'
 
-ID_PATH = './meta/partnet_all_id_list.txt'
+PARTNET_ID_PATH = './meta/partnet_all_id_list.txt'
+AKB48_ID_PATH = './meta/akb48_all_id_list.txt'
 
 TARGET_GAPARTS = [
     'line_fixed_handle', 'round_fixed_handle', 'slider_button', 'hinge_door', 'slider_drawer',
     'slider_lid', 'hinge_lid', 'hinge_knob', 'hinge_handle'
 ]
 
-OBJECT_CATEGORIES = [
+PARTNET_OBJECT_CATEGORIES = [
     'Box', 'Camera', 'CoffeeMachine', 'Dishwasher', 'KitchenPot', 'Microwave', 'Oven', 'Phone', 'Refrigerator',
     'Remote', 'Safe', 'StorageFurniture', 'Table', 'Toaster', 'TrashCan', 'WashingMachine', 'Keyboard', 'Laptop', 'Door', 'Printer',
     'Suitcase', 'Bucket', 'Toilet'
 ]
+AKB48_OBJECT_CATEGORIES = [
+    'Box', 'TrashCan', 'Bucket', 'Drawer'
+]
 
-CAMERA_POSITION_RANGE = {
+PARTNET_CAMERA_POSITION_RANGE = {
     'Box': [{
         'theta_min': 30.0,
         'theta_max': 80.0,
@@ -216,6 +221,40 @@ CAMERA_POSITION_RANGE = {
         'phi_max': 240.0,
         'distance_min': 3.5,
         'distance_max': 4.1
+    }]
+}
+AKB48_CAMERA_POSITION_RANGE = {
+    'Box': [{
+        'theta_min': 30.0,
+        'theta_max': 80.0,
+        'phi_min': 120.0,
+        'phi_max': 240.0,
+        'distance_min': 0.35,
+        'distance_max': 0.55
+    }],
+    'TrashCan': [{
+        'theta_min': 30.0,
+        'theta_max': 80.0,
+        'phi_min': 120.0,
+        'phi_max': 240.0,
+        'distance_min': 0.35,
+        'distance_max': 0.55
+    }],
+    'Bucket': [{
+        'theta_min': 30.0,
+        'theta_max': 80.0,
+        'phi_min': 120.0,
+        'phi_max': 240.0,
+        'distance_min': 0.45,
+        'distance_max': 0.6
+    }],
+    'Drawer': [{
+        'theta_min': 30.0,
+        'theta_max': 80.0,
+        'phi_min': 120.0,
+        'phi_max': 240.0,
+        'distance_min': 0.55,
+        'distance_max': 0.8
     }]
 }
 
