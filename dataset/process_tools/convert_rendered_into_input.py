@@ -22,10 +22,13 @@ from utils.sample_utils import FPS
 
 LOG_PATH = './log_sample.txt'
 
-OBJECT_CATEGORIES = [
+PARTNET_OBJECT_CATEGORIES = [
     'Box', 'Camera', 'CoffeeMachine', 'Dishwasher', 'KitchenPot', 'Microwave', 'Oven', 'Phone', 'Refrigerator',
     'Remote', 'Safe', 'StorageFurniture', 'Table', 'Toaster', 'TrashCan', 'WashingMachine', 'Keyboard', 'Laptop', 'Door', 'Printer',
     'Suitcase', 'Bucket', 'Toilet'
+]
+AKB48_OBJECT_CATEGORIES = [
+    'Box', 'TrashCan', 'Bucket', 'Drawer'
 ]
 
 MAX_INSTANCE_NUM = 1000
@@ -175,6 +178,7 @@ def sample_and_save(filename, data_path, save_path, num_points, visualize=False)
 if __name__ == "__main__":
     
     parser = ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='partnet', help='Specify the dataset to render')
     parser.add_argument('--data_path', type=str, default='./rendered_data', help='Specify the path to the rendered data')
     parser.add_argument('--save_path', type=str, default='./sampled_data', help='Specify the path to save the sampled data')
     parser.add_argument('--num_points', type=int, default=20000, help='Specify the number of points to sample')
@@ -182,12 +186,19 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
+    DATASET = args.dataset
     DATA_PATH = args.data_path
     SAVE_PATH = args.save_path
     if not os.path.exists(SAVE_PATH):
         os.mkdir(SAVE_PATH)
     NUM_POINTS = args.num_points
     VISUALIZE = args.visualize
+    if DATASET == 'partnet':
+        OBJECT_CATEGORIES = PARTNET_OBJECT_CATEGORIES
+    elif DATASET == 'akb48':
+        OBJECT_CATEGORIES = AKB48_OBJECT_CATEGORIES
+    else:
+        raise ValueError(f'Unknown dataset {DATASET}')
     
     filename_list = sorted([x.split('.')[0] for x in os.listdir(pjoin(DATA_PATH, 'rgb'))])
     filename_dict = {x: [] for x in OBJECT_CATEGORIES}

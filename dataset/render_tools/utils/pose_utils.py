@@ -7,7 +7,7 @@ import transforms3d.axangles as tax
 import sapien.core as sapien
 
 
-def query_part_pose_from_joint_qpos(data_path, anno_file, joint_qpos, joints_dict, target_parts, robot: sapien.KinematicArticulation):
+def query_part_pose_from_joint_qpos(data_path, anno_file, joint_qpos, joints_dict, target_parts, base_link_name, robot: sapien.KinematicArticulation):
     anno_path = pjoin(data_path, anno_file)
     anno_list = json.load(open(anno_path, 'r'))
     
@@ -46,8 +46,8 @@ def query_part_pose_from_joint_qpos(data_path, anno_file, joint_qpos, joints_dic
             joint_name = child_link_to_joint_name[cur_name]
             joint_names_to_base.append(joint_name)
             cur_name = joints_dict[joint_name]['parent']
-        assert cur_name == 'base'
-        joint_names_to_base = joint_names_to_base[:-1] # remove the last joint to 'base'
+        assert cur_name == base_link_name, 'link {} is not connected to base link {}'.format(link_name, base_link_name)
+        joint_names_to_base = joint_names_to_base[:-1]
         
         bbox = link_dict['bbox']
         part_class = link_dict['category_id']
