@@ -16,6 +16,14 @@ def get_cam_pos(theta_min, theta_max, phi_min, phi_max, dis_min, dis_max):
     z = math.cos(math.pi / 180 * theta) * distance
     return np.array([x, y, z])
 
+def get_cam_pos_fix(theta, phi, distance):
+    # theta = np.random.uniform(low=theta_min, high=theta_max)
+    # phi = np.random.uniform(low=phi_min, high=phi_max)
+    # distance = np.random.uniform(low=dis_min, high=dis_max)
+    x = math.sin(math.pi / 180 * theta) * math.cos(math.pi / 180 * phi) * distance
+    y = math.sin(math.pi / 180 * theta) * math.sin(math.pi / 180 * phi) * distance
+    z = math.cos(math.pi / 180 * theta) * distance
+    return np.array([x, y, z])
 
 def set_all_scene(data_path,
                   urdf_file,

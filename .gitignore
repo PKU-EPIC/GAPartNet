@@ -5,3 +5,6 @@ wandb/
 ckpt/
 image_kuafu
 output/GAPartNet_result/
+test/
+visu/
+example_rendered/

@@ -20,6 +20,8 @@ For more information, please visit our [**project page**](https://pku-epic.githu
 
 
 ## 💡 News
+- `2024/3/5` We added some example assets in `example_assets` and wrote some usage demos in `demo.ipynb`.
+
 - `2023/6/28` We polish our model with the user-friendly Lightning framework and release detailed training code! Check the gapartnet folder for more details!
 
 - `2023/5/21` GAPartNet Dataset has been released, including Object & Part Assets and Annotations, Rendered PointCloud Data and our Pre-trained Checkpoint.
